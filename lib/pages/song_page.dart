@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:downloader/components/neu_box.dart';
 import 'package:downloader/models/playlist_provider.dart';
 import 'package:flutter/material.dart';
@@ -25,33 +27,36 @@ class SongPage extends StatelessWidget {
 
         // return scaffold UI
         return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
           body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(left: 25, right: 25, bottom: 25),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // appbar
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // back button
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back),
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // back button
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back),
+                        ),
 
-                      // title
-                      const Text('P L A Y L I S T'),
+                        // title
+                        const Text('P L A Y L I S T'),
 
-                      // menu button
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.menu),
-                      ),
-                    ],
+                        // menu button
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.menu),
+                        ),
+                      ],
+                    ),
                   ),
+
+                  Flexible(child: Container()),
 
                   Column(
                     children: [
@@ -62,7 +67,7 @@ class SongPage extends StatelessWidget {
                             // image
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.network(currSong.imagePath!),
+                              child: Image.file(File(currSong.imagePath)),
                             ),
 
                             // song, artist and icon
@@ -84,7 +89,14 @@ class SongPage extends StatelessWidget {
                                           fontSize: 20,
                                         ),
                                       ),
-                                      Text(currSong.artistName),
+                                      Text(
+                                        currSong.artistName,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                      ),
                                     ],
                                   ),
 
@@ -194,6 +206,8 @@ class SongPage extends StatelessWidget {
                       ),
                     ],
                   ),
+
+                  Flexible(child: Container()),
                 ],
               ),
             ),

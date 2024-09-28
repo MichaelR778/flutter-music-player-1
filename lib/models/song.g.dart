@@ -60,12 +60,7 @@ int _songEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.artistName.length * 3;
   bytesCount += 3 + object.audioPath.length * 3;
-  {
-    final value = object.imagePath;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.imagePath.length * 3;
   bytesCount += 3 + object.songName.length * 3;
   return bytesCount;
 }
@@ -94,7 +89,7 @@ Song _songDeserialize(
   );
   object.audioPath = reader.readString(offsets[1]);
   object.id = id;
-  object.imagePath = reader.readStringOrNull(offsets[2]);
+  object.imagePath = reader.readString(offsets[2]);
   return object;
 }
 
@@ -110,7 +105,7 @@ P _songDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     default:
@@ -518,24 +513,8 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Song, Song, QAfterFilterCondition> imagePathIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'imagePath',
-      ));
-    });
-  }
-
-  QueryBuilder<Song, Song, QAfterFilterCondition> imagePathIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'imagePath',
-      ));
-    });
-  }
-
   QueryBuilder<Song, Song, QAfterFilterCondition> imagePathEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -548,7 +527,7 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
   }
 
   QueryBuilder<Song, Song, QAfterFilterCondition> imagePathGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -563,7 +542,7 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
   }
 
   QueryBuilder<Song, Song, QAfterFilterCondition> imagePathLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -578,8 +557,8 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
   }
 
   QueryBuilder<Song, Song, QAfterFilterCondition> imagePathBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -959,7 +938,7 @@ extension SongQueryProperty on QueryBuilder<Song, Song, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Song, String?, QQueryOperations> imagePathProperty() {
+  QueryBuilder<Song, String, QQueryOperations> imagePathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'imagePath');
     });

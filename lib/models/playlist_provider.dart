@@ -108,12 +108,12 @@ class PlaylistProvider extends ChangeNotifier {
     _playlist.addAll(newPlaylist);
   }
 
-  // update playlist when new song is added
+  // update playlist if new song is added to curr playlist
   void updateAdd(List<Song> newPlaylist) {
     updatePlaylist(newPlaylist);
   }
 
-  // update playlist when a song is deleted
+  // skip song if the song to be deleted is currently playing
   int skipDelete(int id) {
     int deletedIndex = _playlist.indexWhere((song) => song.id == id);
     // play next song if deleted song is currently playing
@@ -123,6 +123,7 @@ class PlaylistProvider extends ChangeNotifier {
     return deletedIndex;
   }
 
+  // update playlist when song to be deleted is in curr playlist
   void updateDelete(int deletedIndex, List<Song> newPlaylist) {
     // update playlist and update index if needed
     updatePlaylist(newPlaylist);
