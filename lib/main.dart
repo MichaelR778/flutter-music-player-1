@@ -1,3 +1,4 @@
+import 'package:downloader/models/playlist_database.dart';
 import 'package:downloader/models/playlist_provider.dart';
 import 'package:downloader/models/song_database.dart';
 import 'package:downloader/pages/root.dart';
@@ -13,6 +14,8 @@ void main() async {
     providers: [
       ChangeNotifierProvider(create: (context) => SongDatabase()),
       ChangeNotifierProvider(create: (context) => PlaylistProvider()),
+      ChangeNotifierProvider(
+          create: (context) => PlaylistDatabase(isar: SongDatabase.isar)),
     ],
     child: const MyApp(),
   ));

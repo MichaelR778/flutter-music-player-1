@@ -46,7 +46,7 @@ class SongTile extends StatelessWidget {
                 child: Text(deleteText),
               ),
             ],
-          )
+          ),
         ],
       ),
     );

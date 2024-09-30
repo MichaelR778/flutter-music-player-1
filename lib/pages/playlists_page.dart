@@ -1,9 +1,24 @@
 import 'package:downloader/components/bottom_tile.dart';
-import 'package:downloader/pages/playlist_page.dart';
+import 'package:downloader/components/playlist_tile.dart';
+import 'package:downloader/models/playlist_database.dart';
+import 'package:downloader/models/song.dart';
+import 'package:downloader/pages/add_playlist.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class PlaylistsPage extends StatelessWidget {
+class PlaylistsPage extends StatefulWidget {
   const PlaylistsPage({super.key});
+
+  @override
+  State<PlaylistsPage> createState() => _PlaylistsPageState();
+}
+
+class _PlaylistsPageState extends State<PlaylistsPage> {
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<PlaylistDatabase>(context, listen: false).fetchPlaylists();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,46 +30,37 @@ class PlaylistsPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddPlaylist(),
+                ),
+              );
+            },
             icon: const Icon(Icons.add),
           ),
         ],
       ),
-      body: ListView(
-        children: [
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2),
-            itemCount: 10,
-            itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PlaylistPage(),
-                        ),
-                      );
-                    },
-                    child: SizedBox(
-                      width: 150,
-                      height: 150,
-                      child: Image.network(
-                          'https://upload.wikimedia.org/wikipedia/en/a/a0/Halzion_cover_art.jpg?20200713143519'),
-                    ),
-                  ),
-                  Text('Playlist $index'),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 125),
-        ],
-      ),
+      body: Consumer<PlaylistDatabase>(
+          builder: (context, playlistDatabase, child) {
+        List<Playlist> playlists = playlistDatabase.playlists;
+        return ListView(
+          children: [
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2),
+              itemCount: playlists.length,
+              itemBuilder: (context, index) {
+                return PlaylistTile(playlistId: playlists[index].id);
+              },
+            ),
+            const SizedBox(height: 125),
+          ],
+        );
+      }),
       floatingActionButton: BottomTile(bottomMargin: 58),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );

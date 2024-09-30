@@ -1,6 +1,6 @@
 import 'dart:io';
-
-import 'package:dio/dio.dart';
+import 'package:downloader/models/image_download.dart';
+import 'package:downloader/models/playlist_database.dart';
 import 'package:downloader/models/playlist_provider.dart';
 import 'package:downloader/models/song.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ class SongDatabase extends ChangeNotifier {
   static Future<void> initialize() async {
     final dir = await getApplicationDocumentsDirectory();
     isar = await Isar.open(
-      [SongSchema],
+      [SongSchema, PlaylistSchema],
       directory: dir.path,
     );
   }
@@ -45,7 +45,7 @@ class SongDatabase extends ChangeNotifier {
 
     // update current playlist if curr playlist == this playlist
     await fetchSongs();
-    Provider.of<PlaylistProvider>(context, listen: false).updateAdd(songs);
+    Provider.of<PlaylistProvider>(context, listen: false).updateAdd(songs, -1);
   }
 
   // READ - fetch songs from db
@@ -56,6 +56,24 @@ class SongDatabase extends ChangeNotifier {
     notifyListeners();
   }
 
+  // fetch song by id
+  // Future<Song?> fetchSongById(int id) async {
+  //   final Song? song = await isar.songs.get(id);
+  //   return song;
+  // }
+
+  // fetch song by ids
+  // Future<List<Song>> fetchSongByIds(List<int> songIds) async {
+  //   if (songIds.isEmpty) {
+  //     return [];
+  //   }
+  //   List<Song> fetchedSongs = await isar.songs
+  //       .filter()
+  //       .anyOf(songIds, (q, int id) => q.idEqualTo(id))
+  //       .findAll();
+  //   return fetchedSongs;
+  // }
+
   // DELETE - delete a song from db
   Future<void> deleteSong({
     required BuildContext context,
@@ -63,24 +81,33 @@ class SongDatabase extends ChangeNotifier {
   }) async {
     // skip if deleted song is currently playing
     int deletedIndex =
-        Provider.of<PlaylistProvider>(context, listen: false).skipDelete(id);
+        await Provider.of<PlaylistProvider>(context, listen: false)
+            .skipDelete(context, id);
 
     // get song
     final song = await isar.songs.get(id);
 
     // delete image file and audio file
-    await deleteFiles(song!.imagePath, song.audioPath);
+    await deleteFile(song!.imagePath);
+    await deleteFile(song.audioPath);
 
     // delete song from db
     await isar.writeTxn(() => isar.songs.delete(id));
 
+    // cascade delete song in playlists
+    Provider.of<PlaylistDatabase>(context, listen: false)
+        .cascadeDelete(context, song);
+
     // update curr playlist if curr playlist == this playlist
     await fetchSongs();
-    Provider.of<PlaylistProvider>(context, listen: false)
-        .updateDelete(deletedIndex, songs);
+    if (deletedIndex != -1) {
+      Provider.of<PlaylistProvider>(context, listen: false)
+          .updateDelete(deletedIndex, songs, -1);
+    }
   }
 
   // download song
+  // TODO: try catch, return default path (?)
   Future<String> downloadSong(String url) async {
     var yt = YoutubeExplode();
     var videoId = VideoId(url);
@@ -111,53 +138,5 @@ class SongDatabase extends ChangeNotifier {
     // Dispose the YoutubeExplode object
     yt.close();
     return audioPath;
-  }
-
-  // download album art image
-  Future<String> downloadImage(String url) async {
-    try {
-      final dir = await getExternalStorageDirectory();
-      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      String imagePath = '${dir!.path}/image_$timestamp.jpg';
-
-      Dio dio = Dio();
-      await dio.download(url, imagePath);
-      print('Download succeed, image path: $imagePath');
-      return imagePath;
-    } catch (e) {
-      print('error: $e');
-      // default image if error while download
-      // double check for UI to display assetimage instaed if download failed
-      return '';
-    }
-  }
-
-  // delete local image and audio file
-  Future<void> deleteFiles(String imagePath, String audioPath) async {
-    try {
-      // Create a file object with the given path
-      var imageFile = File(imagePath);
-
-      // Check if the file exists before deleting it
-      if (await imageFile.exists()) {
-        await imageFile.delete();
-        print('File deleted successfully: $imagePath');
-      } else {
-        print('File not found: $imagePath');
-      }
-
-      // Create a file object with the given path
-      var audioFile = File(audioPath);
-
-      // Check if the file exists before deleting it
-      if (await audioFile.exists()) {
-        await audioFile.delete();
-        print('File deleted successfully: $audioPath');
-      } else {
-        print('File not found: $audioPath');
-      }
-    } catch (e) {
-      print('Failed to delete the file: $e');
-    }
   }
 }

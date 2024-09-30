@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
   void play(List<Song> songs, int index) {
     final playlistProvider =
         Provider.of<PlaylistProvider>(context, listen: false);
-    playlistProvider.updatePlaylist(songs);
+    playlistProvider.updatePlaylist(songs, -1);
     playlistProvider.currentSongIndex = index;
   }
 
