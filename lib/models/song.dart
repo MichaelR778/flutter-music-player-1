@@ -40,7 +40,7 @@ class Song {
 class Playlist {
   Id id = Isar.autoIncrement;
   final String playlistName;
-  final songs = IsarLinks<Song>();
+  List<int> songIds = [];
   late String imagePath;
 
   Playlist({required this.playlistName});

@@ -57,10 +57,10 @@ class SongDatabase extends ChangeNotifier {
   }
 
   // fetch song by id
-  // Future<Song?> fetchSongById(int id) async {
-  //   final Song? song = await isar.songs.get(id);
-  //   return song;
-  // }
+  Future<Song?> fetchSongById(int id) async {
+    final Song? song = await isar.songs.get(id);
+    return song;
+  }
 
   // fetch song by ids
   // Future<List<Song>> fetchSongByIds(List<int> songIds) async {

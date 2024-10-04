@@ -16,10 +16,15 @@ class PlaylistTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Playlist playlist = context
-        .watch<PlaylistDatabase>()
-        .playlists
-        .firstWhere((playlist) => playlist.id == playlistId);
+    Playlist playlist;
+    try {
+      playlist = context
+          .watch<PlaylistDatabase>()
+          .playlists
+          .firstWhere((playlist) => playlist.id == playlistId);
+    } catch (e) {
+      return Container();
+    }
 
     return Column(
       children: [

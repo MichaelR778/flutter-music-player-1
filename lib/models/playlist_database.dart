@@ -1,6 +1,7 @@
 import 'package:downloader/models/image_download.dart';
 import 'package:downloader/models/playlist_provider.dart';
 import 'package:downloader/models/song.dart';
+import 'package:downloader/models/song_database.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
@@ -99,31 +100,28 @@ class PlaylistDatabase extends ChangeNotifier {
       return;
     }
 
-    // Load the songs linked to the playlist
-    // await playlist.songs.load();
-
-    // Check if the song is already linked
-    if (!playlist.songs.toList().contains(song)) {
+    // Check if the song is already in playlist
+    if (!playlist.songIds.contains(song.id)) {
       // If not, add the song to the playlist's links
       // playlist.songs.add(song);
 
       // Save the updated playlist
       await isar.writeTxn(() async {
         // await isar.playlists.put(playlist);
-        playlist.songs.add(song);
-        await playlist.songs.save();
+        List<int> songIds = List<int>.from(playlist.songIds);
+        songIds.add(song.id);
+        playlist.songIds = songIds;
+        await isar.playlists.put(playlist);
       });
       print("Song added to the playlist successfully");
 
       // update playlist provider curr playlist if == this updated playlist
-      List<Song> songs = playlist.songs.toList();
+      await getSongFromPlaylist(context, playlist.id);
       Provider.of<PlaylistProvider>(context, listen: false)
-          .updateAdd(songs, playlistId);
+          .updateAdd(_songs, playlistId);
 
       // update playlists list
       await fetchPlaylists();
-      _songs.clear();
-      _songs.addAll(songs);
       notifyListeners();
     } else {
       print("Song is already in the playlist");
@@ -149,15 +147,16 @@ class PlaylistDatabase extends ChangeNotifier {
     // await playlist.songs.load();
 
     // Check if the song is linked to the playlist
-    if (playlist.songs.toList().contains(song)) {
+    if (playlist.songIds.contains(song.id)) {
       // Remove the song from the playlist's links
       // playlist.songs.remove(song);
 
       // Save the updated playlist
       await isar.writeTxn(() async {
-        // await isar.playlists.put(playlist);
-        playlist.songs.remove(song);
-        await playlist.songs.save();
+        List<int> songIds = List<int>.from(playlist.songIds);
+        songIds.remove(song.id);
+        playlist.songIds = songIds;
+        await isar.playlists.put(playlist);
       });
       print("Song removed from the playlist successfully");
 
@@ -167,26 +166,24 @@ class PlaylistDatabase extends ChangeNotifier {
               .skipDelete(context, song.id);
 
       // update playlist provider curr playlist if == this updated playlist
-      List<Song> songs = playlist.songs.toList();
+      await getSongFromPlaylist(context, playlistId);
       if (deletedIndex != -1) {
         Provider.of<PlaylistProvider>(context, listen: false)
-            .updateDelete(deletedIndex, songs, playlistId);
+            .updateDelete(deletedIndex, _songs, playlistId);
       }
 
       // update playlists list
       await fetchPlaylists();
-      _songs.clear();
-      _songs.addAll(songs);
       notifyListeners();
     } else {
       print("Song is not in the playlist");
-      print(playlist.songs);
+      print(playlist.songIds);
     }
   }
 
   void cascadeDelete(BuildContext context, Song song) {
     for (var playlist in playlists) {
-      if (playlist.songs.toList().contains(song)) {
+      if (playlist.songIds.contains(song.id)) {
         deleteSongFromPlaylist(
           context: context,
           playlistId: playlist.id,
@@ -196,12 +193,19 @@ class PlaylistDatabase extends ChangeNotifier {
     }
   }
 
-  // get songs from playlist
-  Future<void> getSongFromPlaylist(int playlistId) async {
+  // update songs from playlist
+  Future<void> getSongFromPlaylist(BuildContext context, int playlistId) async {
     if (currPlaylistId == playlistId) {
       final playlist = await isar.playlists.get(playlistId);
-      await playlist!.songs.load();
-      List<Song> fetchedSongs = playlist.songs.toList();
+      List<Song> fetchedSongs = [];
+      for (final songId in playlist!.songIds) {
+        Song? fetchedSong =
+            await Provider.of<SongDatabase>(context, listen: false)
+                .fetchSongById(songId);
+        if (fetchedSong != null) {
+          fetchedSongs.add(fetchedSong);
+        }
+      }
       _songs.clear();
       _songs.addAll(fetchedSongs);
       notifyListeners();

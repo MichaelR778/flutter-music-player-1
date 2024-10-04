@@ -30,14 +30,19 @@ class _PlaylistPageState extends State<PlaylistPage> {
   void initState() {
     super.initState();
     Provider.of<PlaylistDatabase>(context, listen: false)
-        .getSongFromPlaylist(widget.playlistId);
+        .getSongFromPlaylist(context, widget.playlistId);
   }
 
   @override
   Widget build(BuildContext context) {
     final playlistDatabase = context.watch<PlaylistDatabase>();
-    final Playlist playlist = playlistDatabase.playlists
-        .firstWhere((playlist) => playlist.id == widget.playlistId);
+    Playlist playlist;
+    try {
+      playlist = playlistDatabase.playlists
+          .firstWhere((playlist) => playlist.id == widget.playlistId);
+    } catch (e) {
+      return Container();
+    }
     final List<Song> songs = playlistDatabase.songs;
 
     return Stack(
