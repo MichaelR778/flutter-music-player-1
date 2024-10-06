@@ -67,7 +67,7 @@ class _AddPlaylistState extends State<AddPlaylist> {
                 onPressed: () async {
                   if (formGlobalKey.currentState!.validate()) {
                     formGlobalKey.currentState!.save();
-                    await Provider.of<PlaylistDatabase>(context, listen: false)
+                    Provider.of<PlaylistDatabase>(context, listen: false)
                         .createPlaylist(
                       context: context,
                       playlistName: playlistName,
