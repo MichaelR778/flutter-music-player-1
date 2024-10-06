@@ -2,6 +2,7 @@ import 'package:downloader/models/image_download.dart';
 import 'package:downloader/models/playlist_provider.dart';
 import 'package:downloader/models/song.dart';
 import 'package:downloader/models/song_database.dart';
+import 'package:downloader/pages/error_page.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
@@ -22,19 +23,25 @@ class PlaylistDatabase extends ChangeNotifier {
   // Playlist database functionality
   // CREATE - create new playlist and save to database
   Future<void> createPlaylist({
+    required BuildContext context,
     required String playlistName,
     required String imageUrl,
   }) async {
-    Playlist newPlaylist = Playlist(playlistName: playlistName);
+    try {
+      Playlist newPlaylist = Playlist(playlistName: playlistName);
 
-    // download image
-    newPlaylist.imagePath = await downloadImage(imageUrl);
+      // download image
+      newPlaylist.imagePath = await downloadImage(imageUrl);
 
-    // save song to db
-    await isar.writeTxn(() => isar.playlists.put(newPlaylist));
+      // save song to db
+      await isar.writeTxn(() => isar.playlists.put(newPlaylist));
 
-    // update playlists list
-    await fetchPlaylists();
+      // update playlists list
+      await fetchPlaylists();
+    } catch (e) {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => ErrorPage(error: e)));
+    }
   }
 
   // READ - fetch all playlists

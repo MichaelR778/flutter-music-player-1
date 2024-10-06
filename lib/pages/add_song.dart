@@ -101,14 +101,15 @@ class _AddSongState extends State<AddSong> {
                 onPressed: () async {
                   if (formGlobalKey.currentState!.validate()) {
                     formGlobalKey.currentState!.save();
-                    await Provider.of<SongDatabase>(context, listen: false)
-                        .addSong(
-                            context: context,
-                            songName: songName,
-                            artistName: artistName,
-                            youtubeUrl: youtubeUrl,
-                            imageUrl: imageUrl);
+                    Provider.of<SongDatabase>(context, listen: false).addSong(
+                        context: context,
+                        songName: songName,
+                        artistName: artistName,
+                        youtubeUrl: youtubeUrl,
+                        imageUrl: imageUrl);
                     Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Downloading...')));
                   }
                 },
                 child: const Text('Add song'),

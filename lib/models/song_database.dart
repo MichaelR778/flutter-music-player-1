@@ -3,6 +3,7 @@ import 'package:downloader/models/image_download.dart';
 import 'package:downloader/models/playlist_database.dart';
 import 'package:downloader/models/playlist_provider.dart';
 import 'package:downloader/models/song.dart';
+import 'package:downloader/pages/error_page.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -32,20 +33,26 @@ class SongDatabase extends ChangeNotifier {
     required String youtubeUrl,
     required String imageUrl,
   }) async {
-    Song newSong = Song(songName: songName, artistName: artistName);
+    try {
+      Song newSong = Song(songName: songName, artistName: artistName);
 
-    // download album art image
-    newSong.imagePath = await downloadImage(imageUrl);
+      // download album art image
+      newSong.imagePath = await downloadImage(imageUrl);
 
-    // download song
-    newSong.audioPath = await downloadSong(youtubeUrl);
+      // download song
+      newSong.audioPath = await downloadSong(youtubeUrl);
 
-    // save song to db
-    await isar.writeTxn(() => isar.songs.put(newSong));
+      // save song to db
+      await isar.writeTxn(() => isar.songs.put(newSong));
 
-    // update current playlist if curr playlist == this playlist
-    await fetchSongs();
-    Provider.of<PlaylistProvider>(context, listen: false).updateAdd(songs, -1);
+      // update current playlist if curr playlist == this playlist
+      await fetchSongs();
+      Provider.of<PlaylistProvider>(context, listen: false)
+          .updateAdd(songs, -1);
+    } catch (e) {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => ErrorPage(error: e)));
+    }
   }
 
   // READ - fetch songs from db
@@ -107,7 +114,6 @@ class SongDatabase extends ChangeNotifier {
   }
 
   // download song
-  // TODO: try catch, return default path (?)
   Future<String> downloadSong(String url) async {
     var yt = YoutubeExplode();
     var videoId = VideoId(url);

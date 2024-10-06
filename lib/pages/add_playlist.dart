@@ -69,6 +69,7 @@ class _AddPlaylistState extends State<AddPlaylist> {
                     formGlobalKey.currentState!.save();
                     await Provider.of<PlaylistDatabase>(context, listen: false)
                         .createPlaylist(
+                      context: context,
                       playlistName: playlistName,
                       imageUrl: imageUrl,
                     );
