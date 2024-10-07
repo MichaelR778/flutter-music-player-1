@@ -56,7 +56,7 @@ class SongPage extends StatelessWidget {
                     ),
                   ),
 
-                  Flexible(child: Container()),
+                  Expanded(child: Container()),
 
                   Column(
                     children: [
@@ -207,7 +207,7 @@ class SongPage extends StatelessWidget {
                     ],
                   ),
 
-                  Flexible(child: Container()),
+                  Expanded(child: Container()),
                 ],
               ),
             ),
